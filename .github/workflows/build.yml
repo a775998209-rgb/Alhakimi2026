@@ -1,53 +1,46 @@
-name: EIDOS Self-Building System
+name: EIDOS Final Build
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       
-      - name: Create Project Structure (The Body)
+      - name: Initialize Android Project
         run: |
           mkdir -p app/src/main/java/com/alhakimi/eidos
-          
-          # 1. Create Settings
           echo "include ':app'" > settings.gradle
-          
-          # 2. Create Root Build File
-          echo "buildscript { repositories { google(); mavenCentral() }; dependencies { classpath 'com.android.tools.build:gradle:7.0.4' } }
+          echo "buildscript { repositories { google(); mavenCentral() }; dependencies { classpath 'com.android.tools.build:gradle:7.4.2' } }
           allprojects { repositories { google(); mavenCentral() } }" > build.gradle
-          
-          # 3. Create App Build File
           echo "plugins { id 'com.android.application' }
-          android { compileSdk 31; defaultConfig { applicationId 'com.alhakimi.eidos'; minSdk 21; targetSdk 31; versionCode 1; versionName '1.0' } }" > app/build.gradle
-          
-          # 4. Create Manifest (Identity)
+          android { compileSdk 33; defaultConfig { applicationId 'com.alhakimi.eidos'; minSdk 21; targetSdk 33; versionCode 1; versionName '1.0' } }" > app/build.gradle
           echo '<?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.microsoft.com/apk/res/android" package="com.alhakimi.eidos">
               <application android:label="EIDOS" android:theme="@style/Theme.AppCompat.NoActionBar">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHer" />
+                          <category android:name="android.intent.category.LAUNCHER" />
                       </intent-filter>
                   </activity>
               </application>
           </manifest>' > app/src/main/AndroidManifest.xml
-          
-          # 5. Create Main Code (The Logic)
           echo 'package com.alhakimi.eidos;
           import android.os.Bundle;
           import androidx.appcompat.app.AppCompatActivity;
           import android.widget.TextView;
           import android.graphics.Color;
           import android.view.Gravity;
-
           public class MainActivity extends AppCompatActivity {
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
+              @Override protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   TextView tv = new TextView(this);
-                  tv.setText("EIDOS SYSTEM\nEng. Ahmed Al-Hakimi\nStatus: Operational");
+                  tv.setText("EIDOS SYSTEM\nEng. Ahmed Al-Hakimi\nOperational");
                   tv.setGravity(Gravity.CENTER);
                   tv.setTextSize(30);
                   tv.setTextColor(Color.GREEN);
@@ -56,19 +49,12 @@ jobs:
               }
           }' > app/src/main/java/com/alhakimi/eidos/MainActivity.java
 
-      - name: set up JDK 11
-        uses: actions/setup-java@v4
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-
-      - name: Build APK (The Execution)
+      - name: Build with Gradle
         run: |
-          gradle init --type java-application
           gradle assembleDebug
 
-      - name: Upload Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EIDOS-Final-Version
+          name: EIDOS-Success-APK
           path: app/build/outputs/apk/debug/*.apk
